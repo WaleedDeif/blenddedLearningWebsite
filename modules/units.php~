@@ -1,0 +1,39 @@
+           <section class="sub-page-banner dna-cover dna-cover-1 text-center" data-stellar-background-ratio="0.6">
+                
+                <div class="overlay"></div>
+                
+                <div class="container">
+                    <h1 class="entry-title">الموضـــوعات</h1>
+                </div>
+                
+            </section>
+ 
+          
+          <div class="container doctors-list-x">
+            
+            <h2 class="light bordered-x"></h2><br>
+            
+            <ul class="units-list-items list-unstyled owl-carousel row" id="our-doctors-list">
+            <?php for ($i=0; $i <=6; $i++) { ?>
+              <li>
+                
+                <div class="doctors-img">
+                <img src="http://beta.noubysaleh.com/data/images-list/dna-icon-1.jpg" width="234" alt="" title="">
+                </div>
+                
+                <div class="doctors-detail">
+                  <h4>Dr.Mark Leon<span>senior doctor at medicom</span></h4>
+                  <p><label class="heading">Speciality</label><label class="detail">Physiotherapist</label></p>
+                  <p><label class="heading">Degrees</label><label class="detail">M.D. of Medicine</label></p>
+                  <p><label class="heading">Experience</label><label class="detail">38 years of Experience</label></p>
+                  <p><label class="heading">Training</label><label class="detail">Lorem ipsum ornare, augue.</label></p>
+                  <p><label class="heading">Work days</label><label class="detail">Monday, Friday</label></p>
+                </div>
+                
+              </li>
+       <?php } ?>      
+              
+            </ul>
+            
+          </div>
+          

@@ -1,0 +1,1 @@
+<h2 class="bordered light"><span>منتدى {اسم الموضوع}</span></h2>

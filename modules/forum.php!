@@ -1,0 +1,187 @@
+<?php
+include($GLOBALS['helper']."arabic_date.php");
+// making sure the value sent in the get is valid 
+if(isset($_GET['unit_id']) && !empty($_GET['unit_id']) ){
+if( is_numeric($_GET['unit_id']) ){
+$unit_id= $_GET['unit_id']; 
+$unit_visible = false; 
+$unit_query= "SELECT `title`,`unit_id` FROM unit WHERE status=1 "; 
+$unit_result = mysqli_query($GLOBALS['connection'],$unit_query); 
+if(mysqli_num_rows($unit_result)>0){
+	while($u_data = mysqli_fetch_assoc($unit_result)){
+		$unit_array[$u_data['unit_id']]= $u_data['title']; 
+		if($u_data['unit_id']==$unit_id)
+			$unit_visible= true ; 
+	}
+	if($unit_visible!=true){
+	redir($GLOBALS['domain'].'index.php?page=units',0);
+die();
+}
+
+
+}
+$paginate=1 ;  
+if(isset($_GET['paginate'])&& !empty($_GET['paginate'])){
+if(is_numeric($_GET['paginate']) && $_GET['paginate'] >0 ){
+$paginate= $_GET['paginate']; 
+}
+}
+$sql_paginate= ($paginate-1)*10 ; 
+$num_query = "SELECT COUNT(*) AS `num` FROM `post` WHERE `unit_id`='$unit_id'";
+$num_result = mysqli_query($GLOBALS['connection'],$num_query);
+$num_assoc = mysqli_fetch_assoc($num_result); 
+$num_posts = $num_assoc['num'];
+$max_pages = ceil($num_posts/15);
+
+$feed_query = " SELECT `post_id` , `date` , `title`, `img`, `student_id`, `content` FROM `post` WHERE `unit_id`='$unit_id' ORDER BY `student_id` DESC  LIMIT ".$sql_paginate.",10 ";
+$feed_result = mysqli_query($GLOBALS['connection'],$feed_query); 
+?>	
+<section class="sub-page-banner dna-cover dna-cover-5 text-center" data-stellar-background-ratio="0.6">
+    
+    <div class="overlay"></div>
+    
+    <div class="container">
+        <h1 class="entry-title">المنتـدى</h1>
+    </div>
+    
+</section>
+
+
+<div id="sub-page-content" class="clearfix">
+<div class="container forum-grid">
+					<div class="col-md-9 posts-div blog-wrapper">
+						
+						<h2 class="light bordered"><span>منتدي  <?php  echo $unit_array[$unit_id];?> </span></h2>
+		
+						<?php if(mysqli_num_rows($feed_result)>0){ 
+							while($feed_data= mysqli_fetch_assoc($feed_result)){
+							$post_id= $feed_data['post_id']; 
+							$content= mb_substr($feed_data['content'],0, 256,'UTF-8');
+							$student_id= $feed_data['student_id']; 
+							$title= $feed_data['title'];
+							$img = $feed_data['img']; 
+							$date = $feed_data['date']; 
+							$comment_query = "SELECT `comment_id` FROM `comment` WHERE `post_id`='$post_id'  "; 
+							$comment_result = mysqli_query($GLOBALS['connection'],$comment_query);
+							$num_comments = mysqli_num_rows($comment_result);
+						  ?>
+							<article class="blog-item blog-full-width forum-post">
+							
+								<div class="blog-full-width-date" title="الساعة  <?php echo date('h:i  a',strtotime($date)); ?>">
+									<p class="day"><?php echo date('j',strtotime($date));?></p><p class="monthyear"><?php  echo arabic_month(strtotime($date))."   ".date('Y',strtotime($date));?> </p>
+									<span><?php echo $num_comments; ?><i class="fa fa-comments"></i></span>
+								</div>
+								
+								<div class="blog-content">
+									<h4 class="blog-title"><a href="<?php echo $GLOBALS['domain'].'index.php?page=post&post_id='.$post_id; ?>"><?php echo $title ;  ?></a></h4>
+									<?php 
+									if($img!= NULL){
+										$img_url = "../uploads/".$post_id.".".$img;
+										?> 
+
+									<!-- If post have image print this div -->
+									<div class="blog-thumbnail">
+										<img alt="" src="<?php echo $img_url ;?> ">
+									</div>
+									<?php } ?>
+									<!-- end post image -->
+
+									<?php
+									if($student_id== NULL){
+										$user_query= "SELECT `name` FROM `user` where 1  ";
+									} ELSE {
+										$user_query= "SELECT `name` FROM `student` where student_id='$student_id'  ";
+									}
+									$user_result = mysqli_query($GLOBALS['connection'],$user_query); 
+									if(mysqli_num_rows($user_result)==1)
+									{
+										$user_data = mysqli_fetch_assoc($user_result);
+										$user_name = $user_data['name']; 
+
+									}
+									?>
+								<p class="blog-meta">بواسطة: <a><?php echo $user_name;?></a></p>
+									
+									<p class="post-content">
+										<?php echo $content ; ?>
+										<a href="<?php echo $GLOBALS['domain'].'index.php?page=post&post_id='.$post_id ;?>" class="read-more">إقرأ المزيد</a>
+									</p>
+								</div>
+							</article>
+						<?php }} ?>
+							
+
+							<!-- Pagination -->
+							<div class="text-center">
+                                <ul class="pagination custom-pagination">
+                                	<?php if($paginate > 1) ?>
+                    <li><a href="<?php echo $GLOBALS['domain'].'index.php?page=forum&unit_id='.$unit_id.'&paginate='.$paginate-1 ; ?>">«</a></li>
+                    <?php if($paginate > 3){
+                    	if($paginate > $max_pages - 2){
+                    		$subtract = 3 ;
+                    	$add = 1 ;
+                    	}elseif($paginate > $max_pages-1){
+                    		$subtract = 4 ;
+                    	$add = 0 ;
+                    	}else{
+                    	$subtract = 2 ;
+                    	$add = 2 ;}
+
+                    }else if($paginate > 1){
+                    	$subtract = 1 ;
+                    	$add = 3 ;
+                    }else{
+                    	$subtract = 0 ;
+                    	$add = 4 ;
+                    }?>
+                             <?php    for($count=$paginate-$subtract ; $count<=$paginate+$add; $count++){ ?>
+                                 <li <?php if($count==$paginate) echo 'class="active"'; ?> ><a href="<?php echo $GLOBALS['domain'].'index.php?page=forum&=unit_id='.$unit_id.'&paginate='.$count ; ?>"><?php echo $count ?></a></li><?php } if($paginate < $max_pages) ?>
+                                    <li><a href="<?php echo $GLOBALS['domain'].'index.php?page=forum&unit_id='.$unit_id.'&paginate='.$paginate+1 ; ?>">»</a></li>
+                                </ul>
+                            </div>
+                            <!-- End Pagination -->
+		
+					</div>
+					
+
+
+<!-- Start Units List -->
+					
+					<div class="col-md-3 units-div">
+						
+						<div class="procedures">
+						
+							<h3>الموضــوعات</h3>
+							
+							<div class="panel-group sidebar-nav" id="accordion3">
+								<div class="panel panel-sidebar">
+									<div class="panel-body">
+										<?php foreach ($unit_array as $key => $value) { ?> 
+										<a href="<?php echo $GLOBALS['domain'].'index.php?page=forum&unit_id='.$key ;  ?>" class="<?php if($key==$unit_id) echo 'active' ;?>">
+											<i class="fa fa-angle-left"></i> 
+											منتدى <?php echo $value ;  ?>
+										</a>
+										<?php } ?> 
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+<!-- End Units list -->
+
+
+				</div>
+</div>
+<?php 
+// ending the brace for the get validation 
+}else {
+	// redirecting to the unit page if things where wrong 
+	redir($GLOBALS['domain'].'index.php?page=units',0); 
+
+}
+}else {
+// redirectin to the forum  of the firt unit 
+	redir($GLOBALS['domain'].'index.php?page=forum&unit_id=1',0); 
+}
+?>
